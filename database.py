@@ -127,6 +127,12 @@ class Table:
 
 	def delete_row(self,row_dict):
 
+		if self.data_exists(row_dict) == False:
+			print("No data name {} exists in the database to delete")
+			return
+			
+
+
 		keys , values = get_keys_values(row_dict)
 
 		query = "DELETE FROM {} ".format(self.table_name) + " WHERE "
@@ -262,6 +268,11 @@ class Table:
 
 		else:
 			print("No rows where returned!!")
+
+
+	def data_exists(self,row_dict):
+
+		return True if len(self.select_where(row_dict)) else False
 
 
 
