@@ -46,11 +46,12 @@ class Table:
 
 		self.table_name = table_name
 		self.data_names,self.datatypes=get_keys_values(table_structure)
+		self.database_name = database_name
 
 
-		self.db =sqlite3.connect(database_name)
-		self.db.row_factory = sqlite3.Row # this makes sures the cursor returns row objects instance tuple
-		self.cursor = self.db.cursor()
+		self.connect()
+		
+
 		
 
 		
@@ -91,8 +92,26 @@ class Table:
 			self.cursor.execute(query)
 			print("table created")
 
+		self.close()
+
+	def connect(self):
+
+		self.db =sqlite3.connect(self.database_name)
+		self.db.row_factory = sqlite3.Row # this makes sures the cursor returns row objects instance tuple
+		self.cursor = self.db.cursor()
+
+
+		
+
+	def close(self):
+
+		self.db.close()
+		
+
 
 	def insert(self,row_dict):
+
+		
 
 		keys,values=get_keys_values(row_dict)
 
@@ -115,11 +134,10 @@ class Table:
 
 		insert_values=tuple(values)
 
-
-		
-
+		self.connect()
 		self.cursor.execute(query,insert_values)
 		self.db.commit()
+		self.close()
 
 
 	def drop_table(self):
@@ -127,6 +145,8 @@ class Table:
 		self.db.execute("drop table if exists {}".format(self.table_name,))
 
 	def delete_row(self,row_dict):
+
+		
 
 		if self.data_exists(row_dict) == False:
 			print("No data name {} exists in the database to delete")
@@ -149,8 +169,10 @@ class Table:
 
 		values = tuple(values)
 
+		self.connect()
 		self.db.execute(query,values)
 		self.db.commit()
+		self.close()
 		
 
 
@@ -158,6 +180,8 @@ class Table:
 		
 
 	def select_where(self,row_dict):
+
+		self.connect()
 
 		'''
 
@@ -188,11 +212,18 @@ class Table:
 			for result in results:
 				match_results.append(dict(result))
 
+		self.close()
+
 
 		return match_results
 
 
 	def update(self,olddata_dict,newdata_dict):
+
+		if self.data_exists((olddata_dict)) == False:
+			return
+
+		
 
 
 		new_keys,new_values = get_keys_values(newdata_dict)
@@ -211,21 +242,24 @@ class Table:
 		values=new_values  + old_values
 		values = tuple(values)
 
-		
 
+
+
+		
+       
+		self.connect()
 		self.db.execute(query,values)
 		self.db.commit()
 
-
-
-
-
+		self.close()
 
 
 
 
 
 	def get_all_rows(self):
+
+		self.connect()
 
 		'''
 
@@ -244,6 +278,8 @@ class Table:
 			for row in temp_rows:
 
 				rows.append(dict(row))
+
+		self.close()
 		
 
 		return rows
