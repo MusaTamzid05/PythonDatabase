@@ -8,6 +8,7 @@ from str_to_list_converter import Str_List_Converter
 
 
 
+
 import sqlite3
 
 
@@ -169,7 +170,7 @@ class Table:
 		query = "SELECT * FROM {}".format(self.table_name)+" WHERE "
 		query += self._make_spesific_data_query(keys,concatinate_with='and')
 
-		print(query)
+		
 
 		
 
@@ -274,6 +275,31 @@ class Table:
 
 		return True if len(self.select_where(row_dict)) else False
 
+	def select_by_id(self,id_):
+
+		'''
+		In SQLite , data id increments automaticly and
+		it is save in ROWID.
+		Note that if ROWID id is not specified then
+		it is giveb automaticly by SQLite.
+
+		'''
+
+		if type(id_) != int:
+			raise TypeError("Id must be a int")
+
+		row_dict={"ROWID" :id_}
+
+		row = self.select_where(row_dict)
+
+		if len(row) == 0:
+			print("No data with id {}".format(id_))
+
+		if len(row) > 1:
+			print("More one data with {} was found.".fomat(id_))
+
+		return row[0]
+
 
 
 
@@ -324,6 +350,12 @@ if __name__ == "__main__":
 	db.insert(h1)
 	db.insert(h2)
 	db.insert(h3)
+
+	print("Selecting data with id 1")
+
+	row=db.select_by_id(1) 
+	print(row)
+
 
 
 
