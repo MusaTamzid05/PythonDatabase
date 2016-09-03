@@ -46,12 +46,11 @@ class Table:
 
 		self.table_name = table_name
 		self.data_names,self.datatypes=get_keys_values(table_structure)
-		self.database_name = database_name
 
 
-		self.connect()
-		
-
+		self.db =sqlite3.connect(database_name)
+		self.db.row_factory = sqlite3.Row # this makes sures the cursor returns row objects instance tuple
+		self.cursor = self.db.cursor()
 		
 
 		
@@ -65,10 +64,6 @@ class Table:
 			if the table already does not exists , it creates the table with the given staructure
 			'''
 
-			
-
-			
-		
 
 			query="CREATE TABLE {} ".format(self.table_name)
 		
@@ -84,34 +79,12 @@ class Table:
 			query += temp
 
 			
-
-			
-
-			
 			print("Creating table {}".format(self.table_name))
 			self.cursor.execute(query)
 			print("table created")
 
-		self.close()
-
-	def connect(self):
-
-		self.db =sqlite3.connect(self.database_name)
-		self.db.row_factory = sqlite3.Row # this makes sures the cursor returns row objects instance tuple
-		self.cursor = self.db.cursor()
-
-
-		
-
-	def close(self):
-
-		self.db.close()
-		
-
 
 	def insert(self,row_dict):
-
-		
 
 		keys,values=get_keys_values(row_dict)
 
@@ -134,10 +107,11 @@ class Table:
 
 		insert_values=tuple(values)
 
-		self.connect()
+
+		
+
 		self.cursor.execute(query,insert_values)
 		self.db.commit()
-		self.close()
 
 
 	def drop_table(self):
@@ -145,8 +119,6 @@ class Table:
 		self.db.execute("drop table if exists {}".format(self.table_name,))
 
 	def delete_row(self,row_dict):
-
-		
 
 		if self.data_exists(row_dict) == False:
 			print("No data name {} exists in the database to delete")
@@ -159,20 +131,13 @@ class Table:
 		query = "DELETE FROM {} ".format(self.table_name) + " WHERE "
 
 
-
 		query += self._make_spesific_data_query(keys,concatinate_with='and')
-
-		
-
-		
 
 
 		values = tuple(values)
 
-		self.connect()
 		self.db.execute(query,values)
 		self.db.commit()
-		self.close()
 		
 
 
@@ -181,12 +146,8 @@ class Table:
 
 	def select_where(self,row_dict):
 
-		self.connect()
-
 		'''
-
 		return a list of match results.
-
 		'''
 
 		keys , values = get_keys_values(row_dict)
@@ -212,18 +173,14 @@ class Table:
 			for result in results:
 				match_results.append(dict(result))
 
-		self.close()
-
 
 		return match_results
 
 
+
+
+
 	def update(self,olddata_dict,newdata_dict):
-
-		if self.data_exists((olddata_dict)) == False:
-			return
-
-		
 
 
 		new_keys,new_values = get_keys_values(newdata_dict)
@@ -242,24 +199,17 @@ class Table:
 		values=new_values  + old_values
 		values = tuple(values)
 
-
-
-
 		
-       
-		self.connect()
+
 		self.db.execute(query,values)
 		self.db.commit()
 
-		self.close()
 
 
 
 
 
 	def get_all_rows(self):
-
-		self.connect()
 
 		'''
 
@@ -278,11 +228,12 @@ class Table:
 			for row in temp_rows:
 
 				rows.append(dict(row))
-
-		self.close()
 		
 
 		return rows
+
+
+
 
 	def _make_spesific_data_query(self,keys,concatinate_with=','):
 
@@ -295,6 +246,9 @@ class Table:
 			string += " {} =? {}".format(key,concatinate_with)
 
 		return string.strip(concatinate_with)
+
+
+
 
 		
 	def show_rows_of(self,list_dict):
@@ -313,14 +267,6 @@ class Table:
 
 	def select_by_id(self,id_):
 
-		'''
-		In SQLite , data id increments automaticly and
-		it is save in ROWID.
-		Note that if ROWID id is not specified then
-		it is giveb automaticly by SQLite.
-
-		'''
-
 		if type(id_) != int:
 			raise TypeError("Id must be a int")
 
@@ -331,31 +277,20 @@ class Table:
 		if len(row) == 0:
 			print("No data with id {}".format(id_))
 
-		if len(row) > 1:
-			print("More one data with {} was found.".fomat(id_))
-
-		return row[0]
+		return row
 
 
+	def last_insert_id(self):
 
+		query = "SELECT MAX(ROWID) FROM {}".format(self.table_name)
 
+		result=dict(self.cursor.execute(query).fetchone())
 
-
-
-
+		return result['MAX(ROWID)']
 
 
 
 
-		
-
-
-
-		
-
-			
-
-		
 
 if __name__ == "__main__":
 
@@ -386,12 +321,6 @@ if __name__ == "__main__":
 	db.insert(h1)
 	db.insert(h2)
 	db.insert(h3)
-
-	print("Selecting data with id 1")
-
-	row=db.select_by_id(1) 
-	print(row)
-
 
 
 
