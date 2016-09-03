@@ -265,6 +265,8 @@ class Table:
 
 		return True if len(self.select_where(row_dict)) else False
 
+
+
 	def select_by_id(self,id_):
 
 		if type(id_) != int:
@@ -277,7 +279,10 @@ class Table:
 		if len(row) == 0:
 			print("No data with id {}".format(id_))
 
-		return row
+		elif len(row) > 1:
+			print("Warrning: {} data with id {} was found.".format(len(row),id_))
+
+		return row[0]
 
 
 	def last_insert_id(self):
@@ -328,6 +333,9 @@ if __name__ == "__main__":
 	rows = db.get_all_rows()
 	print("1.After inserting ..")
 	db.show_rows_of(rows)
+
+	print("data with id 1")
+	print(db.select_by_id(1))
 
 	
 	
