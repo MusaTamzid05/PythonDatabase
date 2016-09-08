@@ -29,12 +29,7 @@ class Str_List_Converter:
 
 	def list_to_string(self,word_list,concate_with=' '):
 
-		string=''
-
-		
-
-		for word in word_list:
-			string+= word + concate_with
+		string =' '.join([word + concate_with for word in word_list ])
 
 		return string.strip(concate_with)
 		
