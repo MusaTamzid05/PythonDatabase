@@ -51,9 +51,9 @@ class Table:
 		self.db =sqlite3.connect(database_name)
 		self.db.row_factory = sqlite3.Row # this makes sures the cursor returns row objects instance tuple
 		self.cursor = self.db.cursor()
-		
 
-		
+
+
 		self.cursor.execute("SELECT name FROM sqlite_master WHERE type ='table' AND name = ?",(self.table_name,))
 
 		table_exists = self.cursor.fetchone()
@@ -66,19 +66,19 @@ class Table:
 
 
 			query="CREATE TABLE {} ".format(self.table_name)
-		
+
 
 			temp=''
 
 			for dataname,datatype in zip(self.data_names,self.datatypes):
 				temp+=(dataname+" "+datatype+",")
-				
+
 
 			temp="(" + temp.strip(',') + ")"
-			
+
 			query += temp
 
-			
+
 			print("Creating table {}".format(self.table_name))
 			self.cursor.execute(query)
 			print("table created")
@@ -108,7 +108,7 @@ class Table:
 		insert_values=tuple(values)
 
 
-		
+
 
 		self.cursor.execute(query,insert_values)
 		self.db.commit()
@@ -121,9 +121,9 @@ class Table:
 	def delete_row(self,row_dict):
 
 		if self.data_exists(row_dict) == False:
-			print("No data name {} exists in the database to delete")
+			print("No data name {} exists in the database to delete".format(row_dict))
 			return
-			
+
 
 
 		keys , values = get_keys_values(row_dict)
@@ -138,11 +138,11 @@ class Table:
 
 		self.db.execute(query,values)
 		self.db.commit()
-		
 
 
 
-		
+
+
 
 	def select_where(self,row_dict):
 
@@ -155,9 +155,9 @@ class Table:
 		query = "SELECT * FROM {}".format(self.table_name)+" WHERE "
 		query += self._make_spesific_data_query(keys,concatinate_with='and')
 
-		
 
-		
+
+
 
 		values = tuple(values)
 
@@ -169,7 +169,7 @@ class Table:
 
 
 		if results:
-		
+
 			for result in results:
 				match_results.append(dict(result))
 
@@ -199,7 +199,7 @@ class Table:
 		values=new_values  + old_values
 		values = tuple(values)
 
-		
+
 
 		self.db.execute(query,values)
 		self.db.commit()
@@ -218,17 +218,17 @@ class Table:
 		'''
 
 		rows = []
-		
+
 		temp_rows=self.db.execute("SELECT * FROM {}".format(self.table_name))
 
-		
+
 
 		if temp_rows:
-			
+
 			for row in temp_rows:
 
 				rows.append(dict(row))
-		
+
 
 		return rows
 
@@ -239,7 +239,7 @@ class Table:
 
 
 		string = ""
-	
+
 
 		for key in keys:
 
@@ -250,7 +250,7 @@ class Table:
 
 
 
-		
+
 	def show_rows_of(self,list_dict):
 
 		if len(list_dict):
@@ -303,14 +303,14 @@ if __name__ == "__main__":
 
 
 
-	
+
 
 	db = Table("test",table_structure=table_structure)
 
-	
 
-	
-	
+
+
+
 	h1 = {"name" : "Superman", "id" : 1}
 	h2 = {"name" : "Spiderman", "id" : 2}
 	h3 = {"name": "Batman","id":3}
@@ -319,9 +319,9 @@ if __name__ == "__main__":
 
 
 
-	
 
-	
+
+
 
 	db.insert(h1)
 	db.insert(h2)
@@ -337,8 +337,8 @@ if __name__ == "__main__":
 	print("data with id 1")
 	print(db.select_by_id(1))
 
-	
-	
+
+
 	print("2.After deleting {}".format(h2['name']))
 	db.delete_row(h2)
 	rows = db.get_all_rows()
