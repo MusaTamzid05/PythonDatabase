@@ -4,7 +4,7 @@ Author : Musa Khan
 Date : 25/8/2016
 '''
 
-from str_to_list_converter import Str_List_Converter
+from simple_database.str_to_list_converter import Str_List_Converter
 
 
 
