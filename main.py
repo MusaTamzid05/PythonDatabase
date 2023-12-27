@@ -1,10 +1,15 @@
 from simple_database.database import Table
+from simple_database.database import Database
 
 
 if __name__ == "__main__":
+    database = Database(path="test.db")
+    database.connect()
+
     table_structure={"name":"text","id":"int"}
-    db = Table(table_name="test")
-    db.create(table_structure=table_structure)
+    db = Table(table_name="test", database=database)
+    #db.create(table_structure=table_structure)
+    print(db.get_scheme())
 
 
     h1 = {"name" : "Superman", "id" : 1}

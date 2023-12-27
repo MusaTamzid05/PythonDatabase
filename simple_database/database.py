@@ -4,8 +4,43 @@ Author : Musa Khan (Original starting date)
 Date : 25/8/2016 
 '''
 
-from simple_database.str_to_list_converter import Str_List_Converter
+try:
+    from simple_database.str_to_list_converter import Str_List_Converter
+except ImportError:
+    from str_to_list_converter import Str_List_Converter
+
 import sqlite3
+
+class Database:
+    def __init__(self, path):
+        self.path = path
+
+    def connect(self):
+        self.conn = sqlite3.connect(self.path)
+        self.conn.row_factory = sqlite3.Row # this makes sures the cursor returns row objects instance tuple
+        self.cursor = self.conn.cursor()
+
+    def get_table_names(self):
+        self.cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        table_names = self.cursor.fetchall()
+
+        return [table_name[0] for table_name in table_names]
+
+    def get_cols_of(self, table_name):
+        self.cursor.execute(f"PRAGMA table_info({table_name});")
+        col_info_data = self.cursor.fetchall()
+
+        rows = {}
+
+        for row in col_info_data:
+            name = row["name"]
+            type_ = row["type"]
+            rows[name] = type_
+
+
+        return rows
+
+
 
 
 def raise_error_if_not_dict(dict_row):
@@ -31,23 +66,19 @@ def get_keys_values(dict_row):
 
 
 
-
-
-
-
 class Table:
-    def __init__(self, table_name,  database_name='test.db'):
-        self.database_name = database_name
+    def __init__(self, table_name, database):
+        self.db = database
         self.table_name = table_name
 
     def create(self, table_structure):
         self.data_names,self.datatypes=get_keys_values(table_structure)
-        self.db = sqlite3.connect(self.database_name)
-        self.db.row_factory = sqlite3.Row # this makes sures the cursor returns row objects instance tuple
-        self.cursor = self.db.cursor()
+        #self.db = sqlite3.connect(self.database_name)
+        #self.db.row_factory = sqlite3.Row # this makes sures the cursor returns row objects instance tuple
+        #self.cursor = self.db.cursor()
 
-        self.cursor.execute("SELECT name FROM sqlite_master WHERE type ='table' AND name = ?",(self.table_name,))
-        table_exists = self.cursor.fetchone()
+        self.db.cursor.execute("SELECT name FROM sqlite_master WHERE type ='table' AND name = ?",(self.table_name,))
+        table_exists = self.db.cursor.fetchone()
 
 
         if table_exists == None:
@@ -63,9 +94,14 @@ class Table:
 
 
             print("Creating table {}".format(self.table_name))
-            self.cursor.execute(query)
+            self.db.cursor.execute(query)
             print("table created")
 
+            self.table_structure = table_structure
+
+
+    def get_scheme(self):
+        return self.db.get_cols_of(table_name=self.table_name)
 
 
 
@@ -89,12 +125,12 @@ class Table:
 
 
 
-        self.cursor.execute(query,insert_values)
-        self.db.commit()
+        self.db.cursor.execute(query,insert_values)
+        self.db.conn.commit()
 
 
     def drop_table(self):
-        self.db.execute("drop table if exists {}".format(self.table_name,))
+        self.db.conn.execute("drop table if exists {}".format(self.table_name,))
 
     def delete_row(self,row_dict):
 
@@ -109,8 +145,8 @@ class Table:
         query += self._make_spesific_data_query(keys,concatinate_with='and')
         values = tuple(values)
 
-        self.db.execute(query,values)
-        self.db.commit()
+        self.db.conn.execute(query,values)
+        self.db.conn.commit()
 
 
 
@@ -128,8 +164,8 @@ class Table:
         query += self._make_spesific_data_query(keys,concatinate_with='and')
 
         values = tuple(values)
-        self.cursor.execute(query,values)
-        results = self.cursor.fetchall()
+        self.db.cursor.execute(query,values)
+        results = self.db.cursor.fetchall()
 
         match_results = []
 
@@ -156,8 +192,8 @@ class Table:
         values=new_values  + old_values
         values = tuple(values)
 
-        self.db.execute(query,values)
-        self.db.commit()
+        self.db.conn.execute(query,values)
+        self.db.conn.commit()
 
 
 
@@ -173,7 +209,7 @@ class Table:
         '''
 
         rows = []
-        temp_rows=self.db.execute("SELECT * FROM {}".format(self.table_name))
+        temp_rows=self.db.conn.execute("SELECT * FROM {}".format(self.table_name))
 
         if temp_rows:
             for row in temp_rows:
@@ -181,8 +217,6 @@ class Table:
 
 
         return rows
-
-
 
 
     def _make_spesific_data_query(self,keys,concatinate_with=','):
@@ -232,7 +266,7 @@ class Table:
 
     def last_insert_id(self):
         query = "SELECT MAX(ROWID) FROM {}".format(self.table_name)
-        result=dict(self.cursor.execute(query).fetchone())
+        result=dict(self.db.cursor.execute(query).fetchone())
         return result['MAX(ROWID)']
 
 
@@ -240,47 +274,9 @@ class Table:
 
 
 if __name__ == "__main__":
+    database = Database(path="../test.db")
+    database.connect()
 
     table_structure={"name":"text","id":"int"}
-
-    db = Table("test",table_structure=table_structure)
-
-
-    h1 = {"name" : "Superman", "id" : 1}
-    h2 = {"name" : "Spiderman", "id" : 2}
-    h3 = {"name": "Batman","id":3}
-
-    h4 = {"name" : "Iron Man" , "id": 4}
-
-
-    db.insert(h1)
-    db.insert(h2)
-    db.insert(h3)
-
-
-    rows = db.get_all_rows()
-    print("1.After inserting ..")
-    db.show_rows_of(rows)
-
-    print("data with id 1")
-    print(db.select_by_id(1))
-
-
-
-    print("2.After deleting {}".format(h2['name']))
-    db.delete_row(h2)
-    rows = db.get_all_rows()
-    db.show_rows_of(rows)
-
-
-
-    print("3.After updating {} to {}".format(h1['name'],h2['name']))
-    db.update(h1,h4)
-    rows = db.get_all_rows()
-    db.show_rows_of(rows)
-
-    print("4.After getting Batman")
-    rows = db.select_where(h3)
-
-    db.show_rows_of(rows)
-
+    table = Table(table_name="test", database=database)
+    table.load()
