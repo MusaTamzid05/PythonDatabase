@@ -73,9 +73,6 @@ class Table:
 
     def create(self, table_structure):
         self.data_names,self.datatypes=get_keys_values(table_structure)
-        #self.db = sqlite3.connect(self.database_name)
-        #self.db.row_factory = sqlite3.Row # this makes sures the cursor returns row objects instance tuple
-        #self.cursor = self.db.cursor()
 
         self.db.cursor.execute("SELECT name FROM sqlite_master WHERE type ='table' AND name = ?",(self.table_name,))
         table_exists = self.db.cursor.fetchone()
@@ -115,7 +112,7 @@ class Table:
 
         string = ''
 
-        for index in range(len(keys)):
+        for _ in range(len(keys)):
             string += '?,'
 
         string=string.strip(',')
@@ -203,20 +200,20 @@ class Table:
     def get_all_rows(self):
 
         '''
-
         Return a list of dict objects where  each dict represents a row
 
         '''
 
-        rows = []
-        temp_rows=self.db.conn.execute("SELECT * FROM {}".format(self.table_name))
+        self.db.cursor.execute("SELECT * FROM {}".format(self.table_name))
+        rows = self.db.cursor.fetchall()
 
-        if temp_rows:
-            for row in temp_rows:
-                rows.append(dict(row))
+        result = []
+
+        for row in rows:
+            result.append(dict(row))
 
 
-        return rows
+        return result
 
 
     def _make_spesific_data_query(self,keys,concatinate_with=','):
@@ -270,13 +267,71 @@ class Table:
         return result['MAX(ROWID)']
 
 
+    def get_data_of_index(self, start_index , end_index):
+        length = (end_index + 1)- start_index
+        
+        query = f"SELECT * FROM {self.table_name} LIMIT {length} OFFSET {start_index};" 
+        self.db.cursor.execute(query)
+        rows = self.db.cursor.fetchall()
+
+        results = []
+
+        for row in rows:
+            results.append(dict(row))
+
+        return results
+
+
+
+
+
+
 
 
 
 if __name__ == "__main__":
-    database = Database(path="../test.db")
+
+    database = Database(path="test.db")
     database.connect()
 
-    table_structure={"name":"text","id":"int"}
+    table_structure={"name":"text","city":"text"}
     table = Table(table_name="test", database=database)
-    table.load()
+    table.create(table_structure=table_structure)
+
+
+    h1 = {"name" : "Superman", "city" : "metropolis"}
+    h2 = {"name" : "Spiderman", "city" : "New york"}
+    h3 = {"name": "Batman","city": "Gotham"}
+
+    h4={"name" : "Iron Man" , "city": "New york"}
+
+    table.insert(h1)
+    table.insert(h2)
+    table.insert(h3)
+
+    rows = table.get_all_rows()
+    print("1.After inserting ..")
+    table.show_rows_of(rows)
+
+    print("data with id 1")
+    print(table.select_by_id(1))
+
+
+
+    print("2.After deleting {}".format(h2['name']))
+    table.delete_row(h2)
+    rows = table.get_all_rows()
+    table.show_rows_of(rows)
+
+
+
+    print("3.After updating {} to {}".format(h1['name'],h2['name']))
+    table.update(h1,h4)
+    rows = table.get_all_rows()
+    table.show_rows_of(rows)
+
+    print("4.After getting Batman")
+    rows = table.select_where(h3)
+
+    table.show_rows_of(rows)
+
