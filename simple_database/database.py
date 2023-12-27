@@ -1,14 +1,10 @@
 
 '''
-Author : Musa Khan
-Date : 25/8/2016
+Author : Musa Khan (Original starting date)
+Date : 25/8/2016 
 '''
 
 from simple_database.str_to_list_converter import Str_List_Converter
-
-
-
-
 import sqlite3
 
 
@@ -18,7 +14,6 @@ def raise_error_if_not_dict(dict_row):
 		raise TypeError("Data type must be a dict")
 
 def get_keys_values(dict_row):
-
 	'''
 	function to return key and values from dict
 
@@ -55,7 +50,6 @@ class Table:
 
 
 		self.cursor.execute("SELECT name FROM sqlite_master WHERE type ='table' AND name = ?",(self.table_name,))
-
 		table_exists = self.cursor.fetchone()
 
 		if table_exists == None:
@@ -66,8 +60,6 @@ class Table:
 
 
 			query="CREATE TABLE {} ".format(self.table_name)
-
-
 			temp=''
 
 			for dataname,datatype in zip(self.data_names,self.datatypes):
@@ -75,7 +67,6 @@ class Table:
 
 
 			temp="(" + temp.strip(',') + ")"
-
 			query += temp
 
 
@@ -87,13 +78,9 @@ class Table:
 	def insert(self,row_dict):
 
 		keys,values=get_keys_values(row_dict)
-
 		query = "INSERT INTO {}".format(self.table_name) + "("
-
 		converter = Str_List_Converter()
-
 		string = converter.list_to_string(word_list = keys,concate_with=',')
-
 		query+= string+ ")"
 
 		string = ''
@@ -102,9 +89,7 @@ class Table:
 			string += '?,'
 
 		string=string.strip(',')
-
 		query  += " VALUES (" + string +")"
-
 		insert_values=tuple(values)
 
 
@@ -115,7 +100,6 @@ class Table:
 
 
 	def drop_table(self):
-
 		self.db.execute("drop table if exists {}".format(self.table_name,))
 
 	def delete_row(self,row_dict):
@@ -127,13 +111,8 @@ class Table:
 
 
 		keys , values = get_keys_values(row_dict)
-
 		query = "DELETE FROM {} ".format(self.table_name) + " WHERE "
-
-
 		query += self._make_spesific_data_query(keys,concatinate_with='and')
-
-
 		values = tuple(values)
 
 		self.db.execute(query,values)
@@ -151,25 +130,16 @@ class Table:
 		'''
 
 		keys , values = get_keys_values(row_dict)
-
 		query = "SELECT * FROM {}".format(self.table_name)+" WHERE "
 		query += self._make_spesific_data_query(keys,concatinate_with='and')
 
-
-
-
-
 		values = tuple(values)
-
 		self.cursor.execute(query,values)
-
 		results = self.cursor.fetchall()
 
 		match_results = []
 
-
 		if results:
-
 			for result in results:
 				match_results.append(dict(result))
 
@@ -181,25 +151,16 @@ class Table:
 
 
 	def update(self,olddata_dict,newdata_dict):
-
-
 		new_keys,new_values = get_keys_values(newdata_dict)
-
 		query = "UPDATE {}".format(self.table_name) + " SET "
-
 		query += self._make_spesific_data_query(new_keys)
-
 		query += " WHERE "
-
 		old_keys,old_values = get_keys_values(olddata_dict)
-
 
 		query += self._make_spesific_data_query(old_keys,concatinate_with ='and')
 
 		values=new_values  + old_values
 		values = tuple(values)
-
-
 
 		self.db.execute(query,values)
 		self.db.commit()
@@ -218,15 +179,10 @@ class Table:
 		'''
 
 		rows = []
-
 		temp_rows=self.db.execute("SELECT * FROM {}".format(self.table_name))
 
-
-
 		if temp_rows:
-
 			for row in temp_rows:
-
 				rows.append(dict(row))
 
 
@@ -236,13 +192,9 @@ class Table:
 
 
 	def _make_spesific_data_query(self,keys,concatinate_with=','):
-
-
 		string = ""
 
-
 		for key in keys:
-
 			string += " {} =? {}".format(key,concatinate_with)
 
 		return string.strip(concatinate_with)
@@ -262,7 +214,6 @@ class Table:
 
 
 	def data_exists(self,row_dict):
-
 		return True if len(self.select_where(row_dict)) else False
 
 
@@ -286,11 +237,8 @@ class Table:
 
 
 	def last_insert_id(self):
-
 		query = "SELECT MAX(ROWID) FROM {}".format(self.table_name)
-
 		result=dict(self.cursor.execute(query).fetchone())
-
 		return result['MAX(ROWID)']
 
 
@@ -301,33 +249,19 @@ if __name__ == "__main__":
 
 	table_structure={"name":"text","id":"int"}
 
-
-
-
-
 	db = Table("test",table_structure=table_structure)
-
-
-
 
 
 	h1 = {"name" : "Superman", "id" : 1}
 	h2 = {"name" : "Spiderman", "id" : 2}
 	h3 = {"name": "Batman","id":3}
 
-	h4={"name" : "Iron Man" , "id": 4}
-
-
-
-
-
+	h4 = {"name" : "Iron Man" , "id": 4}
 
 
 	db.insert(h1)
 	db.insert(h2)
 	db.insert(h3)
-
-
 
 
 	rows = db.get_all_rows()
