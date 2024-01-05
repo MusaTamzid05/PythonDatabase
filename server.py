@@ -109,15 +109,13 @@ def show_table(table_name, page):
 
     end_index = start_index + (ROW_SHOW_SIZE - 1)
     rows = table.get_data_of_index(start_index=start_index, end_index=end_index)
-    context["col_names"] = list(rows[0].keys())
+
+    if len(rows) > 0:
+        context["col_names"] = list(rows[0].keys())
+
     context["page_index"] = page
 
-
-    for col_name in context["col_names"]:
-        print(col_name)
-
     context["rows"] = rows
-    print(rows)
 
     return render_template("show_table.html", context=context)
 
