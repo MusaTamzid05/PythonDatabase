@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+
+{% block context %}
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-body">
+              <form method="POST"  enctype="multipart/form-data">
+                    <div class="card-body">
+                      <div class="form-group">
+                        <label for="exampleInputFile">File input</label>
+                        <div class="input-group">
+                          <div class="custom-file">
+                            <input type="file" name="file"  class="custom-file-input" id="exampleInputFile" onchange="onFileChanged()">
+                            <label class="custom-file-label" for="exampleInputFile">Choose file</label>
+                          </div>
+                          <div class="input-group-append">
+                            <span class="input-group-text">Upload</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- /.card-body -->
+
+                    <div class="card-footer">
+                      <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+              </form>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- /.row -->
+  </div><!-- /.container-fluid -->
+{% endblock %}
