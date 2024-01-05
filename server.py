@@ -46,7 +46,7 @@ def home():
         print(request.files)
         uploaded_file = request.files["file"]
 
-        if uploaded_file.filename.endswith("sql") == False:
+        if uploaded_file.filename.endswith("db") == False:
             flash("Only sqlite file")
         else:
             filename = secure_filename(uploaded_file.filename)
