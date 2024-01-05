@@ -19,6 +19,8 @@ app.secret_key = "this is the world best secret key"
 
 current_database_name = None
 
+ROW_SHOW_SIZE = 10
+
 def get_current_database():
     global current_database_name
     global DATABASE_DIR_PATH
@@ -85,6 +87,10 @@ def show_database(database_name):
 
 @app.route("/table/<table_name>/<page>", methods=["GET"])
 def show_table(table_name, page):
+    page = int(page)
+    if page == 0:
+        page = 1
+
     database_list = get_database_list()
     print(f"page {page} {table_name}")
     context = {"database_list" : database_list}
@@ -93,8 +99,18 @@ def show_table(table_name, page):
     current_database = get_current_database()
 
     table = Table(table_name=table_name, database=current_database)
-    rows = table.get_data_of_index(start_index=0, end_index=10)
+    start_index = 0
+    end_index = 0
+
+    if page == 1:
+        start_index = 0
+    else:
+        start_index = ROW_SHOW_SIZE * (page - 1)
+
+    end_index = start_index + (ROW_SHOW_SIZE - 1)
+    rows = table.get_data_of_index(start_index=start_index, end_index=end_index)
     context["col_names"] = list(rows[0].keys())
+    context["page_index"] = page
 
 
     for col_name in context["col_names"]:

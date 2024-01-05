@@ -8,8 +8,8 @@
        <div class="card-header d-flex p-0">
                 <h3 class="card-title p-3">Page</h3>
                 <ul class="nav nav-pills ml-auto p-2">
-                  <li class="nav-item"><a class="nav-link" href="{{url_for('show_table', table_name=context.table_name, page=1)}}">Prev</a></li>
-                  <li class="nav-item"><a class="nav-link" href="{{url_for('show_table', table_name=context.table_name, page=2)}}">Next</a></li>
+                  <li class="nav-item"><a class="nav-link" href="{{url_for('show_table', table_name=context.table_name, page=context.page_index - 1)}}">Prev</a></li>
+                  <li class="nav-item"><a class="nav-link" href="{{url_for('show_table', table_name=context.table_name, page=context.page_index + 1)}}">Next</a></li>
                 </ul>
               </div><!-- /.card-header -->
 
