@@ -1,6 +1,8 @@
 from flask import Flask
 from flask import request
+from flask import redirect
 from flask import flash
+from flask import url_for
 from werkzeug.utils import secure_filename
 from flask import render_template
 
@@ -47,7 +49,9 @@ def home():
         uploaded_file = request.files["file"]
 
         if uploaded_file.filename.endswith("db") == False:
-            flash("Only sqlite file")
+            flash("Only db file")
+            #return redirect(url_for("home"))
+
         else:
             filename = secure_filename(uploaded_file.filename)
 
