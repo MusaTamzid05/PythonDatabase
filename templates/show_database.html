@@ -18,7 +18,7 @@
                       {% for table_name in context.table_names %}
                         <tr>
                             <td>
-                                <a href="{{url_for('show_table', table_name=table_name, offset=1)}}">{{table_name}}</a>
+                                <a href="{{url_for('show_table', table_name=table_name, page=1)}}">{{table_name}}</a>
                             </td>
                         </tr>
                       {% endfor %}
